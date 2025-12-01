@@ -214,6 +214,45 @@
                     finalMessage += "\nNOTES: " + flavors;
                 }
 
+                // 2. Prepare the data object to send to the Node server
+                const payload = {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    pickup: document.getElementById('pickup').value, // Matches 'datetime-local'
+                    payment: document.getElementById('payment').value,
+                    message: orderDetails + (document.getElementById('message').value ? "\nNOTES: " + document.getElementById('message').value : "")
+                };
+
+                // 3. Send to Server using FETCH
+                fetch('http://localhost:3307/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.orderId) {
+                        // Success! Show the green alert box
+                        alertBox.style.display = 'block';
+                        alertBox.textContent = "Order #" + data.orderId + " Confirmed!\n\n" + payload.message;
+                        form.reset();
+                        
+                        // Hide the menus again
+                        document.getElementById('opt_cake').style.display = 'none';
+                        document.getElementById('opt_bread').style.display = 'none';
+                        document.getElementById('opt_muffins').style.display = 'none';
+                        document.getElementById('opt_catering').style.display = 'none';
+                    } else {
+                        alert("Error: " + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Could not connect to the server.");
+                });
+
                 // Show Success
                 alertBox.style.display = 'block';
                 alertBox.textContent = finalMessage;

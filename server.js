@@ -50,55 +50,52 @@ pool.getConnection((err, connection) => {
 // 5. Define API Endpoints
 
 /**
- * Endpoint 1: GET /api/users
- * Fetches all user records from the 'users' table.
+ * Endpoint: POST /api/orders
+ * Receives order details from the HTML form and saves them to the database.
  */
-app.get('/api/users', (req, res) => {
-    const sql = 'SELECT id, name, email FROM users';
+app.post('/api/orders', (req, res) => {
+    // 1. Destructure the data sent from the HTML page
+    const { name, email, pickup, payment, message } = req.body;
 
-    pool.query(sql, (error, results) => {
+    // 2. Validate that we have the minimum required info
+    if (!name || !email || !message) {
+        return res.status(400).json({ error: 'Missing required order details.' });
+    }
+
+    // 3. Prepare SQL to insert into the 'orders' table
+    const sql = `INSERT INTO orders 
+                 (customer_name, email, pickup_time, payment_method, order_description) 
+                 VALUES (?, ?, ?, ?, ?)`;
+    
+    const values = [name, email, pickup, payment, message];
+
+    // 4. Run the query
+    pool.query(sql, values, (error, results) => {
         if (error) {
-            console.error('Database query error:', error);
-            return res.status(500).json({ error: 'Failed to retrieve users.' });
+            console.error('Database insert error:', error);
+            return res.status(500).json({ error: 'Failed to place order.' });
         }
-        // Send the query results back as a JSON array
-        res.json({
-            message: 'Users retrieved successfully',
-            data: results
+        
+        // 5. Success! Send back the new Order ID
+        res.status(201).json({ 
+            message: 'Order placed successfully!', 
+            orderId: results.insertId 
         });
     });
 });
 
 /**
- * Endpoint 2: POST /api/users
- * Adds a new user record to the 'users' table.
- * Expects a JSON body: { "name": "John Doe", "email": "john@example.com" }
+ * Endpoint: GET /api/orders
+ * (Optional) View all orders for the kitchen display
  */
-app.post('/api/users', (req, res) => {
-    // Get name and email from the request body
-    const { name, email } = req.body;
+app.get('/api/orders', (req, res) => {
+    const sql = 'SELECT * FROM orders ORDER BY created_at DESC';
 
-    // Simple validation
-    if (!name || !email) {
-        return res.status(400).json({ error: 'Name and email are required fields.' });
-    }
-
-    // SQL query using '?' placeholders for security (prevents SQL Injection)
-    const sql = 'INSERT INTO users (name, email) VALUES (?, ?)';
-    const values = [name, email];
-
-    pool.query(sql, values, (error, results) => {
+    pool.query(sql, (error, results) => {
         if (error) {
-            console.error('Database insert error:', error);
-            return res.status(500).json({ error: 'Failed to add user to the database.' });
+            return res.status(500).json({ error: 'Database error' });
         }
-        
-        // Respond with success and the ID of the new user
-        res.status(201).json({ 
-            message: 'User added successfully',
-            userId: results.insertId,
-            user: { name, email }
-        });
+        res.json(results);
     });
 });
 
