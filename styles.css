@@ -215,3 +215,32 @@ footer a:hover {
   color: #fffaf0;
   text-decoration: underline;
 }
+
+.form-group {
+    margin-bottom: 20px;
+    width: 100%; 
+}
+
+.form-label-block {
+    display: block;
+    margin-bottom: 8px; 
+    font-weight: bold; 
+    color: #4a3b2b; 
+}
+
+.form-textarea {
+    width: 100%; 
+    padding: 12px;
+    border: 1px solid #ccc; /* A clean, subtle border */
+    border-radius: 6px; 
+    box-sizing: border-box; 
+    font-family: inherit; 
+    font-size: 14px;
+    resize: vertical; 
+    background-color: #fff; 
+}
+
+.form-textarea:focus {
+    border-color: #ffc107; /* Highlight with your theme color */
+    outline: none; /* Remove default browser outline */
+}
