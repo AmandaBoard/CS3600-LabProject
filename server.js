@@ -81,6 +81,38 @@ app.post('/api/orders', (req, res) => {
 });
 
 /**
+ * Endpoint: POST /api/applicants
+ * Saves hiring form submissions to the database.
+ */
+app.post('/api/applicants', (req, res) => {
+    const { name, email, position, resume } = req.body;
+
+    if (!name || !email || !position || !resume) {
+        return res.status(400).json({ error: 'Missing required applicant fields.' });
+    }
+
+    const sql = `
+        INSERT INTO applicants (name, email, position, resume)
+        VALUES (?, ?, ?, ?)
+    `;
+
+    const values = [name, email, position, resume];
+
+    pool.query(sql, values, (error, results) => {
+        if (error) {
+            console.error('Applicant insert error:', error);
+            return res.status(500).json({ error: 'Failed to submit application.' });
+        }
+
+        res.status(201).json({
+            message: 'Application submitted successfully!',
+            applicantId: results.insertId
+        });
+    });
+});
+
+
+/**
  * Endpoint: GET /api/orders
  */
 app.get('/api/orders', (req, res) => {

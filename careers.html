@@ -1,3 +1,11 @@
+<!--CREATE TABLE applicants (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    position VARCHAR(255) NOT NULL,
+    resume TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);-->
 <html>
 
 <head>
@@ -74,26 +82,58 @@
             </div>
         </div>
 
+        <!-- UPDATED SCRIPT BELOW (same formatting preserved) -->
         <script>
             const form = document.getElementById('contactForm');
             const alertBox = document.getElementById('contactAlert');
 
             form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            alertBox.style.display = 'block';
-            alertBox.className = 'alert alert-success';
-            alertBox.textContent = 'Thanks! We will contact you for an interview withing 5-10 business days.';
-            form.reset();
+                e.preventDefault();
+
+                const payload = {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    position: document.getElementById('subject').value,
+                    resume: document.getElementById('message').value
+                };
+
+                fetch('http://localhost:3307/api/applicants', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alertBox.style.display = 'block';
+                    alertBox.className = 'alert alert-success';
+
+                    if (data.applicantId) {
+                        alertBox.textContent = 
+                            'Application #' + data.applicantId + 
+                            ' received! We will contact you within 5–10 business days.';
+                    } else {
+                        alertBox.textContent = 'Form submitted, but no ID returned.';
+                    }
+
+                    form.reset();
+                })
+                .catch(err => {
+                    alertBox.style.display = 'block';
+                    alertBox.className = 'alert alert-danger';
+                    alertBox.textContent = 'Error submitting form. Ensure server is running.';
+                });
             });
         </script>
     </section>
     </section>
+
     <footer>
         <p>
             <a href="terms.html">Terms and Conditions</a> 
         </p>
     </footer>
 </body>
-
 
 </html>
